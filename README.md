@@ -10,7 +10,7 @@ We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/ter
 It should be noted that the devs creating that page were so kind to put the data into main, so its not to hard to parse it with `bs4`  
 We can now extract the data for this year  
 The years to search for can be found in `config.cfg` (created on first run)
-The first year possible is `20/21`, due to variation in the html markup
+The first year possible is `20/21`, due to variation in the html markup, which means that `21/22` is the first one that you will actually get, since we need the last day of the summer-break to calculate the length of the school-year
   
 Also important to note is that the day a holiday starts is **the saturday before**.
 
@@ -19,21 +19,23 @@ For local file-storage we use `sqlite3`
 The following tables are present:  
 **`holidays`:**
 ```
-+-----------------------------------+
-| year | holiday_name | start | end |
-+-----------------------------------+
++----------------------------------------------+
+| year | holiday_name | <federal states> | end |
++----------------------------------------------+
 ```
 - **`Year`:** `string` (e.g. "24/25")
 - **`holiday_name`:** `string` (e.g. "Weihnachten")
+- **`federal states`:** `boolean` all the federal states, set to true if this holiday is relevant for this federal state
 - **`start`:**: `string` First day of the holiday
 - **`end`:** `string` Last day of the holiday
 
 **`start_end`:**
 ```
-+-----------------------------------+
-|  year |   start     |     end     |
-+-----------------------------------+
++------------------------------------------------------+
+|  year | <federal states> |   start     |     end     |
++------------------------------------------------------+
 ```
 - **`year`:** `string`, as in `holiday`, unique
+- **`federal states`:** `boolean`, as in `holiday`
 - **`start`:** `date`, start of the school-year
 - **`end`:** `date`, end of the school-year

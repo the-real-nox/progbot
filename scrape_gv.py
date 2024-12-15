@@ -71,7 +71,7 @@ class Holiday:
         
 
 def init_db(cur: sqlite3.Cursor) -> None:
-    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, start DATE, end DATE)")
+    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, styria BOOLEAN, carinthia BOOLEAN, salzburg BOOLEAN, tirol BOOLEAN, vienna BOOLEAN, upper_austria BOOLEAN, lower_austria BOOLEAN,  start DATE, end DATE)")
     cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING UNIQUE, start DATE, end DATE)")
     logger.ok('Db initialized!')
 
@@ -97,18 +97,14 @@ def handle_res(start_year: int, end_year: int) -> object:
         'Osterferien',
         'Pfingstferien',
         'Weihnachtsferien'
-
     ]
     for tag in wanted:
         content = tag.get_text().strip().replace('\xa0', ' ')
         if content in valid_holidays:
-            current = content
+            current = content.replace('Sommerferien Hauptferien', 'Sommerferien')
             holidays_raw.update({current: []})
         elif current != '' and content != '':
             holidays_raw.get(current).extend(content.split('\n'))
-
-    #print(json.dumps(holidays_raw, ensure_ascii=False, indent=4))
-
 
     pattern = compile(r'^(\d{1,2}\. \w+ \d{4}) bis (\d{1,2}\. \w+ \d{4}), ([A-Za-zöüä ]+(?:, [A-Za-zöüä ]+)*)$')
     date_fmt = '%d. %B %Y'
@@ -126,16 +122,12 @@ def handle_res(start_year: int, end_year: int) -> object:
                         match[3].split(', ')
                     )
                 )
-        print(holiday_dates)
         holidays.update({key: holiday_dates})
 
-    print(json.dumps(holidays, default=lambda o: o.toJSON(), 
-            sort_keys=True,
-            indent=4))
-
+    return holidays
 def request_gv(conf: Config):
     for year in range(conf.start_year, conf.end_year):
-        yield handle_res(year, year + 1)
+        yield tuple((f'{year}/{year + 1}', handle_res(year, year + 1)))
 
 def main():
     locale.setlocale(locale.LC_ALL, 'de_AT.UTF-8')
@@ -144,9 +136,12 @@ def main():
     con = sqlite3.connect('data.db')
     cur = con.cursor()
     init_db(cur)
-    for yearData in request_gv(conf):
-        print(yearData)
-
+    years = list(request_gv(conf))
+    for i in range(1, len(years)):
+        year_start = years[i - 1][1]['Sommerferien'].end_date
+        year_end = years[i][1]['Sommerferien'].start_date
+        cur.execute('REPLACE INTO start_end(year, start, end) VALUES (?, ?, ?)', years[i][0], year_start, year_end)
+        logger.info(f'Added start/end for year {years[i][0]}!')
 
 
 if __name__ == '__main__' :
