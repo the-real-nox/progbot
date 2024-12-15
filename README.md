@@ -6,9 +6,13 @@ A simple web-app to tell you how far you have progressed in the school-year in *
 2. The frontend requests the data now from the api-endpoint to render it out
 
 ## Filling the db
-We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferientermine_{year_start}-{year_end}.html`  
+We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferientermine_{year_start}_-_{year_end}.html`  
 It should be noted that the devs creating that page were so kind to put the data into main, so its not to hard to parse it with `bs4`  
-We can now extract the data for this year
+We can now extract the data for this year  
+The years to search for can be found in `config.cfg` (created on first run)
+The first year possible is `20/21`, due to variation in the html markup
+  
+Also important to note is that the day a holiday starts is **the saturday before**.
 
 ### DB-architecture
 For local file-storage we use `sqlite3`  
