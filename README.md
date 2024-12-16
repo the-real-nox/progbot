@@ -19,23 +19,48 @@ For local file-storage we use `sqlite3`
 The following tables are present:  
 **`holidays`:**
 ```
-+----------------------------------------------+
-| year | holiday_name | <federal states> | end |
-+----------------------------------------------+
++------------------------------------+
+| year | holiday_name | states | end |
++------------------------------------+
 ```
 - **`Year`:** `string` (e.g. "24/25")
 - **`holiday_name`:** `string` (e.g. "Weihnachten")
-- **`federal states`:** `boolean` all the federal states, set to true if this holiday is relevant for this federal state
+- **`states`:** `integer`, bitmask, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:**: `string` First day of the holiday
 - **`end`:** `string` Last day of the holiday
 
 **`start_end`:**
 ```
-+------------------------------------------------------+
-|  year | <federal states> |   start     |     end     |
-+------------------------------------------------------+
++------------------------------------+
+| year | states |  start   |   end   |
++------------------------------------+
 ```
 - **`year`:** `string`, as in `holiday`, unique
-- **`federal states`:** `boolean`, as in `holiday`
+- **`states`:** `integer`, bitmask, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:** `date`, start of the school-year
 - **`end`:** `date`, end of the school-year
+
+### Storing states as a bit-mask
+**Mappings:**
+| State  | Bit |
+| -----  | --- |
+| Styria 🔛🔝🔥  | `2^0`   |
+| Carinthia  | `2^1`  |
+| Salzburg | `2^2` |
+| Tirol | `2^3` |
+| Burgenland | `2^4` |
+| Upper austria | `2^5` |
+| Lower austria  | `2^6` |
+| Vorarlberg | `2^7` |
+| Vienna | `2^8` |
+
+Adding a state is pretty simple.
+We just or-combine the bitmask and the bit-mapping of the state:
+```
+0b0000 0000 | 0b0000 0010 = 0b0000 0010
+```
+
+Now we only need to decode the bitmask. The part which is important the most is how to check if a state is in the bit mask. We can do that by and-comparing the bitmapping of each state, which will give us either `1` or `0` (`True` or `False`):
+```
+0b0000 0010 & 0b0000 0010 = 0b0000 0001
+```
