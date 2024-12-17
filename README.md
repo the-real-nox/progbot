@@ -19,9 +19,9 @@ For local file-storage we use `sqlite3`
 The following tables are present:  
 **`holidays`:**
 ```
-+------------------------------------+
-| year | holiday_name | states | end |
-+------------------------------------+
++--------------------------------------------+
+| year | holiday_name | states | start | end |
++--------------------------------------------+
 ```
 - **`Year`:** `string` (e.g. "24/25")
 - **`holiday_name`:** `string` (e.g. "Weihnachten")

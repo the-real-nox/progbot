@@ -81,9 +81,7 @@ class HolidayDate:
 
         for state in states:
             if state not in cls.STATES:
-                state = state.replace(' ', '') # remove random spaces (don't know why they are there)
-                logger.warn(f'Unknown state: {state}')
-                print(states)
+                logger.warn(f'Unknown state: {state}|')
                 continue
 
             bitmask |= cls.STATES[state]
@@ -102,13 +100,12 @@ class Holiday:
         
 
 def init_db(cur: sqlite3.Cursor) -> None:
-    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, styria BOOLEAN, carinthia BOOLEAN, salzburg BOOLEAN, tirol BOOLEAN, vienna BOOLEAN, upper_austria BOOLEAN, lower_austria BOOLEAN,  start DATE, end DATE)")
+    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, states INTEGER,  start DATE, end DATE)")
     cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING UNIQUE, start DATE, end DATE)")
     logger.ok('Db initialized!')
 
 def handle_res(start_year: int, end_year: int) -> object:
     res = get(BASE_URL.format(start_year=start_year, end_year=end_year))
-    print(res.encoding)
     year = f'{start_year}/{end_year}'
     if not res.ok:
         logger.warn(f'Request failed for {start_year}/{end_year}. Got code: {res.status_code}')
@@ -151,7 +148,7 @@ def handle_res(start_year: int, end_year: int) -> object:
                     HolidayDate(
                         datetime.strptime(match[1], date_fmt) - timedelta(days=2),
                         datetime.strptime(match[2], date_fmt),
-                        match[3].split(', ')
+                        match[3].replace(' ,', ',').split(', ') # remove spaces which made it through due to mistakes in the html-markup
                     )
                 )
         holidays.update({key: holiday_dates})
@@ -159,7 +156,7 @@ def handle_res(start_year: int, end_year: int) -> object:
 
 def request_gv(conf: Config):
     for year in range(conf.start_year, conf.end_year):
-        yield tuple((f'{year}/{year + 1}', handle_res(year, year + 1)))
+        yield {f'{year}/{year + 1}': handle_res(year, year + 1)}
 
 def main():
     locale.setlocale(locale.LC_ALL, 'de_AT.UTF-8')
@@ -169,7 +166,11 @@ def main():
     cur = con.cursor()
     init_db(cur)
     years = list(request_gv(conf))
-    print(json.dumps(years, default=lambda o: o.toJSON()))
+    for i in range(1, len(years)):
+        year = years[i]
+        year_before = years[i - 1]
+
+
     # for i in range(1, len(years)):
     #     year_start = years[i - 1][1]['Sommerferien'].end_date
     #     year_end = years[i][1]['Sommerferien'].start_date
