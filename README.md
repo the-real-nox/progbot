@@ -6,6 +6,7 @@ A simple web-app to tell you how far you have progressed in the school-year in *
 2. The frontend requests the data now from the api-endpoint to render it out
 
 Note that the duration of holidays include weekends (first saturday and last sunday).
+Make sure to take a look at [the risks](#⚠️-third-party-data-based-risks-⚠️) of the script stopping to work. 
 
 ## Filling the db
 We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferientermine_{year_start}_-_{year_end}.html`  
@@ -95,7 +96,7 @@ For every year, the following structure is kept in memory:
 }
 ```
 
-# ⚠️ Usual third-party-data based risks ⚠️
+# ⚠️ Third-party-data based risks ⚠️
 There are always risks of data getting into your script-life-cycle which you are not prepeared for if using third-party data. A few are outlined below:
 ## Different formats
 This is probably the most common one. The format changes and the whole script won't be able to do anything anymore since it doesn't understand the new structure. 
