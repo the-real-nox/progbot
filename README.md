@@ -30,6 +30,7 @@ The following tables are present:
 - **`states`:** `integer`, bit-masks, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:**: `string` First day of the holiday
 - **`end`:** `string` Last day of the holiday
+- There is a **`UNIQUE`**-constrained combining `year`, `holiday_name` and `states` into one single constrained
 
 **`start_end`:**
 ```
@@ -37,10 +38,11 @@ The following tables are present:
 | year | states |  start   |   end   |
 +------------------------------------+
 ```
-- **`year`:** `string`, as in `holiday`, unique
+- **`year`:** `string`, as in `holiday`
 - **`states`:** `integer`, bit-masks, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:** `date`, start of the school-year
 - **`end`:** `date`, end of the school-year
+- There is also a **`UNIQUE`**-constrained combining `year` and `states` into one single constrained
 
 ### Storing states as a bit-mask
 **Mappings:**
@@ -75,7 +77,7 @@ For every year, the following structure is kept in memory:
     '<start-year>/<end-year>': {
         'durations_per_state': {
             ...
-            'state_bit-masks': (<start-date>, <end-date>),
+            'state-bit-masks': (<start-date>, <end-date>),
             ...
         },
         holidays: {

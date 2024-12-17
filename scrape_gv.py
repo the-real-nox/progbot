@@ -107,8 +107,8 @@ class SchoolYear:
         return json.dumps(self)  
 
 def init_db(cur: sqlite3.Cursor) -> None:
-    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, states INTEGER,  start DATE, end DATE)")
-    cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING UNIQUE, start DATE, end DATE)")
+    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, states INTEGER,  start DATE, end DATE, UNIQUE(year, states, holiday_name))")
+    cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING, states INT, start DATE, end DATE, UNIQUE(year, states))")
     logger.ok('Db initialized!')
 
 def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=None) -> SchoolYear:
@@ -183,12 +183,23 @@ def main():
     con = sqlite3.connect('data.db')
     cur = con.cursor()
     init_db(cur)
-    
     # requesting data and parsing it into a format we can work with
-    
     school_years = {}
     request_gv(conf, school_years)
-    print(school_years)
+    
+    for year, school_year_data in school_years.items():
+        year_formatted = f'{year[0]}/{year[1]}'
+        for states, duration in school_year_data.durations_per_state.items():
+            cur.execute('REPLACE INTO start_end(year, states, start, end) VALUES (?, ?, ?, ?)', (year_formatted, states, duration[0], duration[1] + timedelta(50)))
+
+        for holiday_name, holidays_per_state in school_year_data.holidays.items():
+            for states, holiday_data in holidays_per_state.items():
+                cur.execute('REPLACE INTO holidays(year, holiday_name, states, start, end) VALUES (?, ?, ?, ?, ?)', (year_formatted, holiday_name, states, holiday_data.duration[0], holiday_data.duration[1]))
+        
+        logger.info(f'Created data for {year_formatted} in sqlite-db!')
+                
+    
+    con.commit()
     
 if __name__ == '__main__' :
     # try:
