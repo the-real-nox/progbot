@@ -53,6 +53,7 @@ The following tables are present:
 | Lower austria  | `2^6` |
 | Vorarlberg | `2^7` |
 | Vienna | `2^8` |
+| all states | `2^9` |
 
 Adding a state is pretty simple.
 We just or-combine the bitmask and the bit-mapping of the state:

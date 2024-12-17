@@ -30,7 +30,6 @@ class Config():
     def __init__(self):
         parser = configparser.ConfigParser()
         parser.read('./config.cfg')
-        print(parser.sections())
         if not parser.has_section('web_scraper'):
 
             parser['web_scraper'] = {
@@ -56,10 +55,42 @@ class Config():
         logger.ok('Config initialized!')
 
 class HolidayDate:
+    STATES = {
+        'Steiermark': 2**0,
+        'Kärnten': 2**1,
+        'Salzburg': 2**2,
+        'Tirol': 2**3,
+        'Burgenland': 2**4,
+        'Oberösterreich': 2**5,
+        'Niederösterreich': 2**6,
+        'Vorarlberg': 2**7,
+        'Wien': 2**8,
+        'alle Bundesländer': 2**9
+    }
+
+
     def __init__(self, start: date, end: date, states: list[str]):
         self.start = start
         self.end = end
-        self.states = states
+        self.states = self.__encode_states(states)
+
+
+    @classmethod
+    def __encode_states(cls, states: list[str]):
+        bitmask = 0
+
+        for state in states:
+            if state not in cls.STATES:
+                state = state.replace(' ', '') # remove random spaces (don't know why they are there)
+                logger.warn(f'Unknown state: {state}')
+                print(states)
+                continue
+
+            bitmask |= cls.STATES[state]
+
+        return bitmask
+
+
     def toJSON(self):
         return f"{self.start}, {self.end}, {self.states}"
 
@@ -77,6 +108,7 @@ def init_db(cur: sqlite3.Cursor) -> None:
 
 def handle_res(start_year: int, end_year: int) -> object:
     res = get(BASE_URL.format(start_year=start_year, end_year=end_year))
+    print(res.encoding)
     year = f'{start_year}/{end_year}'
     if not res.ok:
         logger.warn(f'Request failed for {start_year}/{end_year}. Got code: {res.status_code}')
@@ -123,8 +155,8 @@ def handle_res(start_year: int, end_year: int) -> object:
                     )
                 )
         holidays.update({key: holiday_dates})
-
     return holidays
+
 def request_gv(conf: Config):
     for year in range(conf.start_year, conf.end_year):
         yield tuple((f'{year}/{year + 1}', handle_res(year, year + 1)))
@@ -137,11 +169,12 @@ def main():
     cur = con.cursor()
     init_db(cur)
     years = list(request_gv(conf))
-    for i in range(1, len(years)):
-        year_start = years[i - 1][1]['Sommerferien'].end_date
-        year_end = years[i][1]['Sommerferien'].start_date
-        cur.execute('REPLACE INTO start_end(year, start, end) VALUES (?, ?, ?)', years[i][0], year_start, year_end)
-        logger.info(f'Added start/end for year {years[i][0]}!')
+    print(json.dumps(years, default=lambda o: o.toJSON()))
+    # for i in range(1, len(years)):
+    #     year_start = years[i - 1][1]['Sommerferien'].end_date
+    #     year_end = years[i][1]['Sommerferien'].start_date
+    #     cur.execute('REPLACE INTO start_end(year, start, end) VALUES (?, ?, ?)', years[i][0], year_start, year_end)
+    #     logger.info(f'Added start/end for year {years[i][0]}!')
 
 
 if __name__ == '__main__' :
