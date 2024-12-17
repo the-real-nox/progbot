@@ -1,5 +1,6 @@
 from enum import Enum
 import sqlite3
+from typing import Generator
 from colorama import Fore, Style
 from colorama import init as init_colorama
 from datetime import date, datetime, timedelta
@@ -49,12 +50,13 @@ class Config():
         if self.start_year > self.end_year:
             raise ValueError('`start_year` must be smaller than `end_year`!')
         
-        if self.start_year < 20:
+        if self.start_year < 21: # ONLY EDIT WITH CAUTION. SCRIPT PROBABLY BREAKS
             raise ValueError('`start_year` must be 20 at minimum!')
 
         logger.ok('Config initialized!')
 
-class HolidayDate:
+class HolidayDuration:
+    
     STATES = {
         'Steiermark': 2**0,
         'Kärnten': 2**1,
@@ -67,13 +69,10 @@ class HolidayDate:
         'Wien': 2**8,
         'alle Bundesländer': 2**9
     }
-
-
-    def __init__(self, start: date, end: date, states: list[str]):
-        self.start = start
-        self.end = end
+    
+    def __init__(self, duration: tuple[date, date], states: list[str]):
         self.states = self.__encode_states(states)
-
+        self.duration = duration
 
     @classmethod
     def __encode_states(cls, states: list[str]):
@@ -88,23 +87,31 @@ class HolidayDate:
 
         return bitmask
 
-
-    def toJSON(self):
-        return f"{self.start}, {self.end}, {self.states}"
-
-
-class Holiday:
-    def __init__(self, name: str, dates: dict):
-        self.name = name
-        self.dates = dates
+class SchoolYear:
+    def __init__(self, year: tuple[int, int], holidays: dict[str, list[HolidayDuration]], prev_year_sum_durations: list[HolidayDuration] = None):
+        self.year = year
+        self.durations_per_state = {}
+        self.holidays = holidays
+        for k, sum_break_duration in holidays['Sommerferien'].items():
+            self.durations_per_state.update({k: (None, sum_break_duration.duration[0] + timedelta(days=2))}) # We have to add the 2 days back in, since we have already removed them before
+            
+        if prev_year_sum_durations != None:
+            self.__determine_prev_summer_break_ends(prev_year_sum_durations)
         
+        
+    def __determine_prev_summer_break_ends(self, prev_year_sum_durations: HolidayDuration):
+        for k, sum_break_duration in prev_year_sum_durations.items():
+            self.durations_per_state.update({k: (sum_break_duration.duration[1] + timedelta(days=1), self.durations_per_state.get(k)[1])}) # Add 1 to start the school-year on monday, not on sunday
+    
+    def __repr__(self):
+        return json.dumps(self)  
 
 def init_db(cur: sqlite3.Cursor) -> None:
     cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, states INTEGER,  start DATE, end DATE)")
     cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING UNIQUE, start DATE, end DATE)")
     logger.ok('Db initialized!')
 
-def handle_res(start_year: int, end_year: int) -> object:
+def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=None) -> SchoolYear:
     res = get(BASE_URL.format(start_year=start_year, end_year=end_year))
     year = f'{start_year}/{end_year}'
     if not res.ok:
@@ -137,47 +144,52 @@ def handle_res(start_year: int, end_year: int) -> object:
 
     pattern = compile(r'^(\d{1,2}\. \w+ \d{4}) bis (\d{1,2}\. \w+ \d{4}), ([A-Za-zöüä ]+(?:, [A-Za-zöüä ]+)*)$')
     date_fmt = '%d. %B %Y'
-    holidays = {}
+    holidays: dict[str, HolidayDuration] = {}
     for key, value in holidays_raw.items():
-        holiday_dates = []
-        
+        holiday_durations_per_state = {}
         for el in value: 
             match = pattern.match(el)
             if match != None:
-                holiday_dates.append(
-                    HolidayDate(
-                        datetime.strptime(match[1], date_fmt) - timedelta(days=2),
+                holiday_duration = HolidayDuration(
+                    (
+                        datetime.strptime(match[1], date_fmt) - timedelta(days=2), # we show saturday as the first day, not the first school-day which is free
                         datetime.strptime(match[2], date_fmt),
-                        match[3].replace(' ,', ',').split(', ') # remove spaces which made it through due to mistakes in the html-markup
-                    )
+                    ),
+                    match[3].replace(' ,', ',').split(', ') # remove spaces which made it through due to mistakes in the html-markup downloaded
                 )
-        holidays.update({key: holiday_dates})
-    return holidays
+                
+                holiday_durations_per_state.update({
+                    holiday_duration.states: holiday_duration
+                })
 
-def request_gv(conf: Config):
-    for year in range(conf.start_year, conf.end_year):
-        yield {f'{year}/{year + 1}': handle_res(year, year + 1)}
+        holidays.update({key: holiday_durations_per_state})
+    
+    return SchoolYear((start_year, end_year), holidays, prev_year_sum_durations)
+
+def request_gv(conf: Config, school_years: dict):
+    for year in range(conf.start_year - 1, conf.end_year):
+        prev_year = (year - 1, year)
+        school_year = handle_res(year, year + 1, school_years[prev_year].holidays['Sommerferien'] if prev_year in school_years else None)
+        school_years.update({
+            school_year.year: school_year
+        })
 
 def main():
-    locale.setlocale(locale.LC_ALL, 'de_AT.UTF-8')
+    locale.setlocale(locale.LC_ALL, 'de_AT.UTF-8') # Make sure that the week-days are parsed in German for the region Austria (Jänner, etc.)
     init_colorama()
+    
+    # initializing
     conf = Config()
     con = sqlite3.connect('data.db')
     cur = con.cursor()
     init_db(cur)
-    years = list(request_gv(conf))
-    for i in range(1, len(years)):
-        year = years[i]
-        year_before = years[i - 1]
-
-
-    # for i in range(1, len(years)):
-    #     year_start = years[i - 1][1]['Sommerferien'].end_date
-    #     year_end = years[i][1]['Sommerferien'].start_date
-    #     cur.execute('REPLACE INTO start_end(year, start, end) VALUES (?, ?, ?)', years[i][0], year_start, year_end)
-    #     logger.info(f'Added start/end for year {years[i][0]}!')
-
-
+    
+    # requesting data and parsing it into a format we can work with
+    
+    school_years = {}
+    request_gv(conf, school_years)
+    print(school_years)
+    
 if __name__ == '__main__' :
     # try:
        main()
