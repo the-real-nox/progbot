@@ -11,6 +11,21 @@ import json
 from re import compile
 import locale
 
+# Just a quick logo, couldn't find any other ascii-arts related to storage. Props to https://www.asciiart.eu/computers/floppies
+MAIN_COLOR = Fore.GREEN
+LOGO = MAIN_COLOR + f"""
+ _________________
+|# {Style.BRIGHT}:           :{Style.RESET_ALL + MAIN_COLOR} #|
+|  {Style.BRIGHT}:           :{Style.RESET_ALL + MAIN_COLOR}  |
+|  {Style.BRIGHT}:   Prog    :{Style.RESET_ALL + MAIN_COLOR}  |
+|  {Style.BRIGHT}:    Bot    :{Style.RESET_ALL + MAIN_COLOR}  |
+|  {Style.BRIGHT}:___________:{Style.RESET_ALL + MAIN_COLOR}  |
+|     _________   |
+|    | __      |  |
+|    ||  |     |  |
+\____||__|_____|__|
+ by the-real-nox"""
+
 # Pretty simple implementation, doesn't have to be too fancy
 class CustomLogger():
     def ok(self, msg: str) -> None:
@@ -107,8 +122,8 @@ class SchoolYear:
         return json.dumps(self)  
 
 def init_db(cur: sqlite3.Cursor) -> None:
-    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year STRING, holiday_name STRING, states INTEGER,  start DATE, end DATE, UNIQUE(year, states, holiday_name))")
-    cur.execute("CREATE TABLE IF NOT EXISTS start_end(year STRING, states INT, start DATE, end DATE, UNIQUE(year, states))")
+    cur.execute("CREATE TABLE IF NOT EXISTS holidays(year_start INT, year_end INT, holiday_name STRING, states INTEGER,  start DATE, end DATE, UNIQUE(year_start, year_end, states, holiday_name))")
+    cur.execute("CREATE TABLE IF NOT EXISTS start_end(year_start INT, year_end INT, states INT, start DATE, end DATE, UNIQUE(year_start, year_end, states))")
     logger.ok('Db initialized!')
 
 def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=None) -> SchoolYear:
@@ -178,6 +193,8 @@ def main():
     locale.setlocale(locale.LC_ALL, 'de_AT.UTF-8') # Make sure that the week-days are parsed in German for the region Austria (Jänner, etc.)
     init_colorama()
     
+    print(LOGO + "\n")
+    
     # initializing
     conf = Config()
     con = sqlite3.connect('data.db')
@@ -188,16 +205,16 @@ def main():
     request_gv(conf, school_years)
     
     for year, school_year_data in school_years.items():
-        year_formatted = f'{year[0]}/{year[1]}'
         for states, duration in school_year_data.durations_per_state.items():
-            cur.execute('REPLACE INTO start_end(year, states, start, end) VALUES (?, ?, ?, ?)', (year_formatted, states, duration[0], duration[1] + timedelta(50)))
+            cur.execute('REPLACE INTO start_end(year_start, year_end, states, start, end) VALUES (?, ?, ?, ?, ?)', (year[0], year[1], states, duration[0], duration[1] + timedelta(50)))
 
         for holiday_name, holidays_per_state in school_year_data.holidays.items():
             for states, holiday_data in holidays_per_state.items():
-                cur.execute('REPLACE INTO holidays(year, holiday_name, states, start, end) VALUES (?, ?, ?, ?, ?)', (year_formatted, holiday_name, states, holiday_data.duration[0], holiday_data.duration[1]))
+                cur.execute('REPLACE INTO holidays(year_start, year_end, holiday_name, states, start, end) VALUES (?, ?, ?, ?, ?, ?)', (year[0], year[1], holiday_name, states, holiday_data.duration[0], holiday_data.duration[1]))
         
-        logger.info(f'Created data for {year_formatted} in sqlite-db!')
-                
+        logger.info(f'Created data for {f"{year[0]}/{year[1]}"} in sqlite-db!')
+     
+    logger.ok(f'Created data in db for {len(school_years)} year{"s" if len(school_years) != 0 else ""}!')
     
     con.commit()
     

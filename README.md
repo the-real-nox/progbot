@@ -21,28 +21,30 @@ For local file-storage we use `sqlite3`
 The following tables are present:  
 **`holidays`:**
 ```
-+--------------------------------------------+
-| year | holiday_name | states | start | end |
-+--------------------------------------------+
++-------------------------------------------------------------+
+| year_start | year_end | holiday_name | states | start | end |
++-------------------------------------------------------------+
 ```
-- **`Year`:** `string` (e.g. "24/25")
+- **`year_start`:** `integer`, year in short form (e.g. 24). This is the year the school start in
+- **`year_end`:** `integer`, year in short form (e.g. 24). This is the year the school ends in
 - **`holiday_name`:** `string` (e.g. "Weihnachten")
 - **`states`:** `integer`, bit-masks, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:**: `string` First day of the holiday
 - **`end`:** `string` Last day of the holiday
-- There is a **`UNIQUE`**-constrained combining `year`, `holiday_name` and `states` into one single constrained
+- There is a **`UNIQUE`**-constrained combining `year_start`, `year_end`, `holiday_name` and `states` into one single constrained
 
 **`start_end`:**
 ```
-+------------------------------------+
-| year | states |  start   |   end   |
-+------------------------------------+
++-----------------------------------------------------+
+| year_start | year_end | states |  start   |   end   |
++-----------------------------------------------------+
 ```
-- **`year`:** `string`, as in `holiday`
+- **`year_start`:** `integer`, as in as in `holidays`
+- **`year_end`:** `integer`, as in as in `holidays`
 - **`states`:** `integer`, bit-masks, refer to [Storing states as a bit-mask](#storing-states-as-a-bit-mask)
 - **`start`:** `date`, start of the school-year
 - **`end`:** `date`, end of the school-year
-- There is also a **`UNIQUE`**-constrained combining `year` and `states` into one single constrained
+- There is also a **`UNIQUE`**-constrained combining `year_start`, `year_end` and `states` into one single constrained
 
 ### Storing states as a bit-mask
 **Mappings:**
