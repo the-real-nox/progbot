@@ -63,12 +63,12 @@ The following tables are present:
 | all states    | `2^9` |
 
 Adding a state is pretty simple.
-We just or-combine the bit-masks and the bit-mapping of the state:
+We just `OR`-bite-wise combine the bit-masks and the bit-mapping of the state:
 ```
 0b0000 0000 | 0b0000 0010 = 0b0000 0010
 ```
 
-Now we only need to decode the bit-masks. The part which is important the most is how to check if a state is in the bit mask. We can do that by and-comparing the bitmapping of each state, which will give us either `1` or `0` (`True` or `False`):
+Now we only need to decode the bit-masks. The part which is important the most is how to check if a state is in the bit mask. We can do that by `AND`-bite-wise comparing the bit-mapping of each state, which will give us either `1` or `0` (`True` or `False`):
 ```
 0b0000 0010 & 0b0000 0010 = 0b0000 0001
 ```
