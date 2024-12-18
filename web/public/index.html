@@ -8,15 +8,40 @@
     <link rel="stylesheet" href="client.css">
     <script src='client.js'></script>
 </head>
-<body class="bg-slate-700 ">
-    <div class="flex flex-col content-center justify-center w-screen">
-        <h1>You have already through that many percent:</h1>
+<body class="flex flex-col items-center justify-center bg-slate-700 h-screen w-screen">
+    <div class="flex flex-col items-center justify-center w-screen text-center text-white">
+        <h1 class="font-extrabold text-heading">School-year-progression:</h1>
+        <div class="mt-5 bg-slate-900 w-[90%] h-10 rounded-md" id="progressBar">
+            <div class="bg-green-500 w-[50%] h-10 rounded-md flex justify-center items-center" id="progressBar">
+                <span class="font-mono text-[1.5rem]" id="pctNumber">50%</span>
+            </div>
+        </div>
+        <div class="m-10">
+            <h1 class="text-sub-heading font-bold">Next holiday:</h1>
+            <div class="[&>*]:ml-2 font-mono text-data">
+                <span id="nxName">"Weihnachtsferien",</span>
+                <span id="nxTimeTill">2 days,</span>
+                <span id="nxDuration">21.12.2024 - 6.1.2025</span>
+            </div>
+        </div>
         <div>
-            60!
+            <h1 class="font-bold text-sub-heading">All holidays of 24/25:</h1>
+            <div class="rounded-xl">
+                <table class="text-data w-full">
+                    <thead class="bg-slate-900">
+                        <th>Name</th>
+                        <th>Duration</th>
+                    </thead>
+                    <tbody class="bg-slate-900">
+                        <tr>
+                            <td>Test</td>
+                            <td>Test</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <div>
-        <h1>Next holiday:</h1>
-    </div>
+    
 </body>
 </html>
