@@ -1,9 +1,12 @@
-# ProgBot
+# School-prog 🕛
 A simple web-app to tell you how far you have progressed in the school-year in **Austria**
 
 ## How it works
-1. First, you should run the `scrape_gv.py`-script to init the db with data which will than be exposed through an api-endpoint
-2. The frontend requests the data now from the api-endpoint to render it out
+1. Install dependencies:
+    - Python: `cd scripts && pip install -r requirements.txt`
+    - Node: `npm i`
+2. First, you should run the `scripts/db_wizard.py`-script to init the db with data which will than be exposed through an api-endpoint
+3. The frontend requests the data now from the api-endpoint to render it out
 
 Note that the duration of holidays include weekends (first saturday and last sunday).
 Make sure to take a look at [the risks](#⚠️-third-party-data-based-risks-⚠️) of the script stopping to work. 
