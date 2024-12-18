@@ -63,7 +63,7 @@ The following tables are present:
 | Lower austria | `2^6` |
 | Vorarlberg    | `2^7` |
 | Vienna        | `2^8` |
-| all states    | `2^9` |
+| all states    | `2^9 - 1` |
 
 Adding a state is pretty simple.
 We just `OR`-bite-wise combine the bit-masks and the bit-mapping of the state:
@@ -71,10 +71,12 @@ We just `OR`-bite-wise combine the bit-masks and the bit-mapping of the state:
 0b0000 0000 | 0b0000 0010 = 0b0000 0010
 ```
 
-Now we only need to decode the bit-masks. The part which is important the most is how to check if a state is in the bit mask. We can do that by `AND`-bite-wise comparing the bit-mapping of each state, which will give us either `1` or `0` (`True` or `False`):
+Now we only need to decode the bit-masks. The part which is important the most is how to check if a state is in the bit mask. We can do that by `AND`-bite-wise comparing the bit-mapping of each state, which will give us either the bit-mapping we have compared it with or `0` (`True` or `False`):
 ```
 0b0000 0010 & 0b0000 0010 = 0b0000 0001
 ```
+
+When having all-states as the state the bit-representation looks like `0b1111 1111`, which mean that all bit-wise `AND`s will return the bit-mapping we have compared (which means `True`)
 
 ### How data is handled on the inside
 For every year, the following structure is kept in memory:

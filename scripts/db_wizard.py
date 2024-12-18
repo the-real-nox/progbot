@@ -90,7 +90,7 @@ class HolidayDuration:
         'Niederösterreich': 2**6,
         'Vorarlberg': 2**7,
         'Wien': 2**8,
-        'alle Bundesländer': 2**9
+        'alle Bundesländer': 2**9 - 1
     }
     
     def __init__(self, duration: tuple[date, date], states: list[str]):
@@ -175,7 +175,7 @@ def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=Non
             if match != None:
                 holiday_duration = HolidayDuration(
                     (
-                        datetime.strptime(match[1], date_fmt) - timedelta(days=2), # we show saturday as the first day, not the first school-day which is free
+                        datetime.strptime(match[1], date_fmt) - (timedelta(days=2) if key != 'Sommerferien' else timedelta(0)), # we show saturday as the first day, not the first school-day which is of (on summer-break, this is already correctly set)
                         datetime.strptime(match[2], date_fmt),
                     ),
                     match[3].replace(' ,', ',').split(', ') # remove spaces which made it through due to mistakes in the html-markup downloaded
