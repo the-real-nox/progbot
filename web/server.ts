@@ -1,22 +1,21 @@
 import * as express from 'express';
 import { config } from 'dotenv';
 import * as sqlite3 from 'sqlite3';
-import { STATES } from './constants'
-import { invalid_request, DataValidator, ErrorReport, server_error, base_validation, file_report_on_db_error } from './error_handling'
-import * as moment from 'moment';
+import { ErrorReport, base_validation, file_report_on_db_error } from './server/error_handling'
+import { join } from 'path';
 
 
 config();
 
 const sqlite = sqlite3.verbose();
-const db = new sqlite.Database('data.db', (err) => {
+const db = new sqlite.Database(join(__dirname, '..', 'data.db'), (err) => {
     if (err) {
         new ErrorReport('CRITICAL', err.name, err.message).fileReport('Error while initializing db')
     }
 });
 
 const app = express();
-const PORT = Number(process.env.PORT) | 3000;
+const PORT = Number(process.env.PORT) | 80;
 
 
 
@@ -78,6 +77,8 @@ app.get('/api/:year_start/:year_end/holidays', (req, res) => {
         })
     })
 })
+
+app.use('/', express.static(join(__dirname, 'public'), ))
 
 app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}...`)

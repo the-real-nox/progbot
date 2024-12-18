@@ -3,14 +3,14 @@ import { STATES } from './constants';
 type length_api_error_reason = 'FORMAT' | 'YEAR_SPAN_INVALID' | 'YEAR_START_TOO_SMALL' | 'END_YEAR_TOO_BIG' | 'INVALID_YEAR_ORDER';
 type state_error_reason = 'INVALID_STATE' | 'NO_STATE_PROVIDED' | 'INVALID_QUERY';
 
-export function invalid_request(res: Response, reason: length_api_error_reason | state_error_reason) {
+function invalid_request(res: Response, reason: length_api_error_reason | state_error_reason) {
     res.status(400).json({
         success: false,
         reason: reason   
     });
 }
 
-export function server_error(res: Response) {
+function server_error(res: Response) {
     res.status(500).json({
         success: false,
         reason: 'SERVER_ERROR'
