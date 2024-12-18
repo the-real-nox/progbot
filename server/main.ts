@@ -18,7 +18,7 @@ const db = new sqlite.Database('data.db', (err) => {
 const app = express();
 const PORT = Number(process.env.PORT) | 3000;
 
-function base_validation(res: express.Response, req: express.Request): {
+function base_validation( req: express.Request, res: express.Response): {
     year_start: number,
     year_end: number,
     states_bitmask: number
@@ -43,9 +43,9 @@ function base_validation(res: express.Response, req: express.Request): {
     }
 }
 
-app.get('/api/:year_start/:year_end/length', (req, res) => {
+app.get('/api/:year_start/:year_end/duration', (req, res) => {
 
-    const validated = base_validation(res, req);
+    const validated = base_validation(req, res);
 
     if (!validated) {
         return;
@@ -82,7 +82,7 @@ app.get('/api/:year_start/:year_end/length', (req, res) => {
 })
 
 app.get('/api/:year_start/:year_end/holidays', (req, res) => {
-
+    const validate = base_validation(req, res)
 
     res.json(`holiday!${req.params.year_start} ${req.params.year_end} ${Object.keys(req.query)}`);
 })
