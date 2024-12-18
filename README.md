@@ -37,7 +37,7 @@ The following tables are present:
 - **`end`:** `string` Last day of the holiday
 - There is a **`UNIQUE`**-constrained combining `year_start`, `year_end`, `holiday_name` and `states` into one single constrained
 
-**`start_end`:**
+**`durations`:**
 ```
 +-----------------------------------------------------+
 | year_start | year_end | states |  start   |   end   |

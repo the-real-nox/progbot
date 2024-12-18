@@ -131,7 +131,7 @@ class SchoolYear:
 
 def init_db(cur: sqlite3.Cursor) -> None:
     cur.execute("CREATE TABLE IF NOT EXISTS holidays(year_start INT, year_end INT, holiday_name STRING, states INTEGER,  start DATE, end DATE, UNIQUE(year_start, year_end, states, holiday_name))")
-    cur.execute("CREATE TABLE IF NOT EXISTS start_end(year_start INT, year_end INT, states INT, start DATE, end DATE, UNIQUE(year_start, year_end, states))")
+    cur.execute("CREATE TABLE IF NOT EXISTS durations(year_start INT, year_end INT, states INT, start DATE, end DATE, UNIQUE(year_start, year_end, states))")
     logger.ok('Db initialized!')
 
 def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=None) -> SchoolYear:
@@ -214,7 +214,7 @@ def main():
     
     for year, school_year_data in school_years.items():
         for states, duration in school_year_data.durations_per_state.items():
-            cur.execute('REPLACE INTO start_end(year_start, year_end, states, start, end) VALUES (?, ?, ?, ?, ?)', (year[0], year[1], states, duration[0], duration[1]))
+            cur.execute('REPLACE INTO durations(year_start, year_end, states, start, end) VALUES (?, ?, ?, ?, ?)', (year[0], year[1], states, duration[0], duration[1]))
 
         for holiday_name, holidays_per_state in school_year_data.holidays.items():
             for states, holiday_data in holidays_per_state.items():

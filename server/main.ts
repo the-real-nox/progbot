@@ -51,7 +51,7 @@ app.get('/api/:year_start/:year_end/duration', (req, res) => {
         return;
     }
 
-    db.get('SELECT start, end FROM start_end WHERE year_start = ? AND year_end = ? AND states & ? = ?', [validated.year_start, validated.year_end, validated.states_bitmask, validated.states_bitmask], (err, row) => {
+    db.get('SELECT start, end FROM durations WHERE year_start = ? AND year_end = ? AND states & ? = ?', [validated.year_start, validated.year_end, validated.states_bitmask, validated.states_bitmask], (err, row) => {
         if (err) {
             new ErrorReport('CRITICAL', err.name, err.message, {
                 year_start: validated.year_start,
