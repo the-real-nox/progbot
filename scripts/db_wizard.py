@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import json
 from re import compile
 import locale
+from pathlib import Path
 
 # Just a quick ascii-art. Props to https://www.asciiarthub.com/wizard.html
 LOGO = Fore.BLUE + f"""
@@ -51,7 +52,8 @@ BASE_URL = 'https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferienterm
 class Config():
     def __init__(self):
         parser = configparser.ConfigParser()
-        parser.read('./config.cfg')
+        self.conf_file_path = Path(__file__).parent.joinpath('db_wizard.config.cfg').resolve().as_posix()
+        parser.read(self.conf_file_path)
         if not parser.has_section('web_scraper'):
 
             parser['web_scraper'] = {
@@ -59,7 +61,7 @@ class Config():
                 'end_year': date.today().year + 1
             }
 
-            with open('config.cfg', 'w') as conf_file:
+            with open(self.conf_file_path, 'w') as conf_file:
                 parser.write(conf_file)
 
         self.start_year = parser.getint('web_scraper', 'start_year') % 2000
@@ -71,7 +73,7 @@ class Config():
         if self.start_year > self.end_year:
             raise ValueError('`start_year` must be smaller than `end_year`!')
         
-        if self.start_year < 21: # ONLY EDIT WITH CAUTION. SCRIPT PROBABLY BREAKS
+        if self.start_year < 20: # ONLY EDIT WITH CAUTION. SCRIPT PROBABLY BREAKS
             raise ValueError('`start_year` must be 20 at minimum!')
 
         logger.ok('Config initialized!')
@@ -188,7 +190,7 @@ def handle_res(start_year: int, end_year: int, prev_year_sum_durations: dict=Non
     return SchoolYear((start_year, end_year), holidays, prev_year_sum_durations)
 
 def request_gv(conf: Config, school_years: dict):
-    for year in range(conf.start_year - 1, conf.end_year):
+    for year in range(conf.start_year, conf.end_year):
         prev_year = (year - 1, year)
         school_year = handle_res(year, year + 1, school_years[prev_year].holidays['Sommerferien'] if prev_year in school_years else None)
         school_years.update({
@@ -203,7 +205,7 @@ def main():
     
     # initializing
     conf = Config()
-    con = sqlite3.connect('data.db')
+    con = sqlite3.connect(Path(__file__).parent.parent.joinpath('data.db').as_posix())
     cur = con.cursor()
     init_db(cur)
     # requesting data and parsing it into a format we can work with
@@ -225,7 +227,7 @@ def main():
     con.commit()
     
 if __name__ == '__main__' :
-    # try:
+    try:
        main()
-    # except Exception as e:
-        # logger.fatal('Quit: %s' % e)
+    except Exception as e:
+        logger.fatal('Quit: %s' % e)
