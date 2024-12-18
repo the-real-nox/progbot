@@ -11,9 +11,9 @@ Make sure to take a look at [the risks](#⚠️-third-party-data-based-risks-⚠
 ## Filling the db
 We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferientermine_{year_start}_-_{year_end}.html`  
 It should be noted that the devs creating that page were so kind to put the data into main, so its not to hard to parse it with `bs4`  
-We can now extract the data for this year  
-The years to search for can be found in `config.cfg` (created on first run)
-The first year possible to parse is `20/21`, due to variation in the html markup, which means that `21/22` is the first one that you will actually get and are able to specify in the config-file, since we need the last day of the summer-break a year before to calculate the length of the school-year.
+We can now extract the data for this year.  
+The years to search for can be found in `config.cfg` (created on first run).
+The first year possible to parse is `20/21`, due to variation in the html markup, which means that `21/22` is the first one that you will actually get the duration of, since we need the last day of the summer-break a year before in order to retrieve the length of the school-year.
   
 Also important to note is that the day a holiday starts is **the saturday before**.
 
