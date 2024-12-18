@@ -23,7 +23,7 @@ This is the same for all dates:
 The time at the end will be always all `0`'s
 
 ## Routes
-### Length-api
+### Duration-API
 ```
 /api/:year_start/:year_end/length
 ```
@@ -51,7 +51,7 @@ This api-endpoint is used to determine the length of the school-year.
 Look at ["Date-format"](#date-format) for more information.
 <br>
 
-### Holiday-api
+### Holiday-API
 ```
 /api/:year_start/:year_end/holiday
 ```
