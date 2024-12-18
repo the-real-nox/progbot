@@ -4,17 +4,17 @@ type length_api_error_reason = 'FORMAT' | 'YEAR_SPAN_INVALID' | 'YEAR_START_TOO_
 type state_error_reason = 'INVALID_STATE' | 'NO_STATE_PROVIDED' | 'INVALID_QUERY';
 
 export function invalid_request(res: Response, reason: length_api_error_reason | state_error_reason) {
-    res.json({
+    res.status(400).json({
         success: false,
         reason: reason   
-    }).status(400);
+    });
 }
 
 export function server_error(res: Response) {
-    res.json({
+    res.status(500).json({
         success: false,
         reason: 'SERVER_ERROR'
-    }).status(500);
+    });
 }
 
 export const DataValidator = {
@@ -44,7 +44,7 @@ export const DataValidator = {
             return false;
         }
 
-        if (Number(year_end) - Number(year_start) > 1) {
+        if (Number(year_end) != Number(year_start) + 1) {
             error_callback('YEAR_SPAN_INVALID');
             return false;
         }
@@ -52,7 +52,7 @@ export const DataValidator = {
         return true;
     },
 
-    validate_states(query: object, error_callback : (reason: state_error_reason) => void): boolean{
+    validate_state(query: object, error_callback : (reason: state_error_reason) => void): boolean{
         if (Object.keys(query).length > 1) {
             error_callback('INVALID_QUERY');
             return false;
@@ -72,9 +72,7 @@ export const DataValidator = {
     }
 }
 
-export enum ErrorSeverity  {
-    WARNING, CRITICAL
-}
+type ErrorSeverity = 'WARNING' | 'CRITICAL';
 
 export class ErrorReport {
     private data: object | undefined;

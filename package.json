@@ -2,8 +2,7 @@
   "name": "school_prog",
   "version": "1.0.0",
   "description": "A simple web-app to display you your progress in the school-year.",
-  "main": "index.js",
-  "scripts": {
+    "scripts": {
     "start": "ts-node server/main.ts",
     "dev": "nodemon server/main.ts"
   },
@@ -12,6 +11,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "moment": "^2.30.1",
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"

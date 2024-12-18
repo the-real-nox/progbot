@@ -1,6 +1,27 @@
 # API-Documentation
 This is the documentation of the api-backend for the db filled with data by the script described in [README.md](./README.md)
 
+## Structure
+Since this is a json-backend api, everything is returned in the json-format.
+
+```
+{
+    success: <true or false>,
+    reason: <reason>,          // Only on success = false,
+    data: {                    // The actual data
+        ...
+    }
+}
+```
+- **`success`**: `true` when there are no errors, else `false`.
+- **`reason`**: Only present if success is `false`. Refer to the [Error-reasons](#error-resons) below.
+- **`data`**: The actual data. Refer to [each route above](#routes) in order to lookup what i returns
+
+#### Date-Format
+This is the same for all dates:  
+`YYYY-MM-DD HH:mm:ss`  
+The time at the end will be always all `0`'s
+
 ## Routes
 ### Length-api
 ```
@@ -13,9 +34,24 @@ This api-endpoint is used to determine the length of the school-year.
 
 **Queries:**
 - `?state`: Refer to [Queries](#query-parameters)
+
+**Returns:**
+```
+{
+    success: ...,
+    reason:  ...,           
+    data: {
+        start: ...
+        end: ...
+    }
+}
+```
+- **`start`:** The exact start of the school-year. `Null` if the first year is queried. See ["Filling the db"](./README.md#filling-the-db) for mor information.
+- **`end`:** The exact end of the school-year.
+Look at ["Date-format"](#date-format) for more information.
 <br>
 
-
+### Holiday-api
 ```
 /api/:year_start/:year_end/holiday
 ```
@@ -28,8 +64,7 @@ This api-endpoint is used to retrieve the holidays for a specific state.
 - `?state`: Refer to [Queries](#query-parameters)
 
 ## Query-Parameters
-- `?state`: One of the Austrian federal states you want to get the holidays for  
-If no query is provided, data for all states is returned!  
+- `?state`: One of the Austrian federal states
 
 | State-values |
 | ------ |
@@ -42,25 +77,11 @@ If no query is provided, data for all states is returned!
 | `lower_austria` |
 | `vorarlberg`    |
 
+## Error-reasons
+**Specialties:**  
+Error-code: `404`  
+The normal body is returned, but the `data`-field is empty, since there was no data that was found with what was provided.
 
-## Return-formats
-Since this is a json-backend api, everything is returned in the json-format.
-
-### Structure
-```
-{
-    success: <true or false>,
-    reason: <reason>           // Only on success = false,
-    data: {                    // The actual data
-        ...
-    }
-}
-```
-- **`success`**: `true` when there are no errors, else `false`.
-- **`reason`**: Only present if success is `false`. Refer to the [Error-reasons](#error-resons) below.
-- **`data`**: The actual data. Refer to [each route above](#routes) in order to lookup what i returns
-
-### Error-reason
 **Errors due to invalid year:**
 Error-code: `400`
 - **`FORMAT`:** An invalid format was provided. Must be in short form: e.g. 24
@@ -85,6 +106,6 @@ Error-code: `400`
 Error-code: `500`
 - **`SERVER_ERROR`:** An unexpected error occurred on the server. Contact the one who runs it, since they can read the error in the logs.
 
-### Errors on the server-side
+## Errors on the server-side
 Errors will be logged to `stdout`. The errors are handed up as they are thrown / provided by the db. But there is one exception:
 - `DB_SUSPICIOUS`: The db provided data in a format that wasn't expected. Manual intervention is needed. This is the only warning with a severity of `WARNING`, since it make ths api still return `data` (an empty object / `{}`)
