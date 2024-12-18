@@ -17,8 +17,8 @@ LOGO = MAIN_COLOR + f"""
  _________________
 |# {Style.BRIGHT}:           :{Style.RESET_ALL + MAIN_COLOR} #|
 |  {Style.BRIGHT}:           :{Style.RESET_ALL + MAIN_COLOR}  |
-|  {Style.BRIGHT}:   Prog    :{Style.RESET_ALL + MAIN_COLOR}  |
-|  {Style.BRIGHT}:    Bot    :{Style.RESET_ALL + MAIN_COLOR}  |
+|  {Style.BRIGHT}:    .gv    :{Style.RESET_ALL + MAIN_COLOR}  |
+|  {Style.BRIGHT}:  scraper  :{Style.RESET_ALL + MAIN_COLOR}  |
 |  {Style.BRIGHT}:___________:{Style.RESET_ALL + MAIN_COLOR}  |
 |     _________   |
 |    | __      |  |
@@ -206,7 +206,7 @@ def main():
     
     for year, school_year_data in school_years.items():
         for states, duration in school_year_data.durations_per_state.items():
-            cur.execute('REPLACE INTO start_end(year_start, year_end, states, start, end) VALUES (?, ?, ?, ?, ?)', (year[0], year[1], states, duration[0], duration[1] + timedelta(50)))
+            cur.execute('REPLACE INTO start_end(year_start, year_end, states, start, end) VALUES (?, ?, ?, ?, ?)', (year[0], year[1], states, duration[0], duration[1]))
 
         for holiday_name, holidays_per_state in school_year_data.holidays.items():
             for states, holiday_data in holidays_per_state.items():
