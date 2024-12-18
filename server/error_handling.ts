@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { STATES } from './constants';
 type length_api_error_reason = 'FORMAT' | 'YEAR_SPAN_INVALID' | 'YEAR_START_TOO_SMALL' | 'END_YEAR_TOO_BIG' | 'INVALID_YEAR_ORDER';
 type state_error_reason = 'INVALID_STATE' | 'NO_STATE_PROVIDED' | 'INVALID_QUERY';
@@ -15,6 +15,43 @@ export function server_error(res: Response) {
         success: false,
         reason: 'SERVER_ERROR'
     });
+}
+
+type BaseValidation = {
+    year_start: number,
+    year_end: number,
+    states_bitmask: number
+
+} | undefined;
+
+export function base_validation( req: Request, res: Response): BaseValidation {
+    let success = DataValidator.validate_years(req.params.year_start, req.params.year_end, (error_reason) => {
+        invalid_request(res, error_reason);
+    })
+
+    success = success && DataValidator.validate_state(req.query, (error_reason) => {
+        invalid_request(res, error_reason);
+    })
+
+    if (!success) {
+        return;
+    }
+
+    return {
+        year_start:  Number(req.params.year_start),
+        year_end:  Number(req.params.year_end),
+        states_bitmask:  STATES[req.query.state as string]
+    }
+}
+
+export function file_report_on_db_error(req: Request, res: Response, err: Error, baseValidationResult: BaseValidation) {
+    new ErrorReport('CRITICAL', err.name, err.message, {
+        year_start: baseValidationResult?.year_start,
+        year_end: baseValidationResult?.year_end,
+        state_bit: baseValidationResult?.states_bitmask
+    }).fileReport(`Error occurred while handling request from ${req.socket.remoteAddress}`);
+
+    server_error(res);
 }
 
 export const DataValidator = {

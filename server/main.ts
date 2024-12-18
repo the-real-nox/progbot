@@ -2,7 +2,7 @@ import * as express from 'express';
 import { config } from 'dotenv';
 import * as sqlite3 from 'sqlite3';
 import { STATES } from './constants'
-import { invalid_request, DataValidator, ErrorReport, server_error } from './error_responds'
+import { invalid_request, DataValidator, ErrorReport, server_error, base_validation, file_report_on_db_error } from './error_handling'
 import * as moment from 'moment';
 
 
@@ -18,30 +18,7 @@ const db = new sqlite.Database('data.db', (err) => {
 const app = express();
 const PORT = Number(process.env.PORT) | 3000;
 
-function base_validation( req: express.Request, res: express.Response): {
-    year_start: number,
-    year_end: number,
-    states_bitmask: number
 
-} | undefined {
-    let success = DataValidator.validate_years(req.params.year_start, req.params.year_end, (error_reason) => {
-        invalid_request(res, error_reason);
-    })
-
-    success = success && DataValidator.validate_state(req.query, (error_reason) => {
-        invalid_request(res, error_reason);
-    })
-
-    if (!success) {
-        return;
-    }
-
-    return {
-        year_start:  Number(req.params.year_start),
-        year_end:  Number(req.params.year_end),
-        states_bitmask:  STATES[req.query.state as string]
-    }
-}
 
 app.get('/api/:year_start/:year_end/duration', (req, res) => {
 
@@ -51,18 +28,12 @@ app.get('/api/:year_start/:year_end/duration', (req, res) => {
         return;
     }
 
-    db.get('SELECT start, end FROM durations WHERE year_start = ? AND year_end = ? AND states & ? = ?', [validated.year_start, validated.year_end, validated.states_bitmask, validated.states_bitmask], (err, row) => {
+    db.get('SELECT start, end FROM durations WHERE year_start = ? AND year_end = ? AND states & ? = ?', [validated.year_start, validated.year_end, validated.states_bitmask, validated.states_bitmask], (err: Error, row: object) => {
         if (err) {
-            new ErrorReport('CRITICAL', err.name, err.message, {
-                year_start: validated.year_start,
-                year_end: validated.year_end,
-                state_bit: validated.states_bitmask
-            }).fileReport(`Error occurred while handling request from ${req.socket.remoteAddress}`);
-
-            server_error(res);
+            file_report_on_db_error(req, res, err, validated)
         }
 
-        let result: object = row as object;
+        let result = row;
 
         let status: number = 200;
         if (!result) {
@@ -77,14 +48,35 @@ app.get('/api/:year_start/:year_end/duration', (req, res) => {
         res.status(status).json({
             success: true,
             data: result
-        })
+        });
     })
 })
 
 app.get('/api/:year_start/:year_end/holidays', (req, res) => {
-    const validate = base_validation(req, res)
+    const validate = base_validation(req, res);
 
-    res.json(`holiday!${req.params.year_start} ${req.params.year_end} ${Object.keys(req.query)}`);
+    if (!validate) {
+        return;
+    }
+
+    db.all('SELECT holiday_name, start, end FROM holidays WHERE year_start = ? AND year_end = ? AND states & ? = ?', [validate?.year_start, validate?.year_end, validate?.states_bitmask, validate?.states_bitmask], (err: Error, row: unknown) => {
+        if (err) {
+            file_report_on_db_error(req, res, err, validate);
+        }
+
+        let status: number = 200;
+        let result = row;
+
+        if (!row) {
+            status = 404;
+            result = {};
+        }
+
+        res.status(status).json({
+            success: true,
+            data: result
+        })
+    })
 })
 
 app.listen(PORT, () => {
