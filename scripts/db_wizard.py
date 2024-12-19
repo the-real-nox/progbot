@@ -116,7 +116,7 @@ class SchoolYear:
         self.durations_per_state = {}
         self.holidays = holidays
         for k, sum_break_duration in holidays['Sommerferien'].items():
-            self.durations_per_state.update({k: (None, sum_break_duration.duration[0] + timedelta(days=2))}) # We have to add the 2 days back in, since we have already removed them before
+            self.durations_per_state.update({k: (None, sum_break_duration.duration[0])})
             
         if prev_year_sum_durations != None:
             self.__determine_prev_summer_break_ends(prev_year_sum_durations)
