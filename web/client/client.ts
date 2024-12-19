@@ -7,7 +7,10 @@ const nextTimeDelta = document.getElementById('nx-time-delta') as HTMLSpanElemen
 const nextDuration = document.getElementById('nx-duration') as HTMLSpanElement;
 
 (window as any).dayjs.extend((window as any).dayjs_plugin_customParseFormat);
+(window as any).dayjs.extend((window as any).dayjs_plugin_timezone);
+(window as any).dayjs.extend((window as any).dayjs_plugin_utc);
 
+(window as any).dayjs.tz.setDefault('Europe/Vienna');
 const STATES: string[] = [
     'Styria',
     'Carinthia',
@@ -38,8 +41,7 @@ async function getCurrentSchoolYearDuration(state: string): Promise<{
     duration: Record<string, any>
 }> {
     const yearNow = dayjs().year() % 2000;
-    const now = dayjs('20-04-2024', 'DD-MM-YYYY');
-    console.log(now.toISOString());
+    const now = dayjs();
 
     const requestYear = async (start: number, end: number) => {
         return await fetch(`/api/${start}/${end}/duration?state=${state}`)
@@ -58,8 +60,6 @@ async function getCurrentSchoolYearDuration(state: string): Promise<{
 
     const yearOne: Record<string, any> = await requestYear(yearNow - 1, yearNow);
 
-    console.log(now.isBefore(dayjs(yearOne['end'])));
-
     if (now.isBefore(dayjs(yearOne['end'])) && now.isAfter(dayjs(yearOne['start']))) {
         return {year: [yearNow - 1, yearNow], duration: yearOne};
     }
@@ -72,6 +72,16 @@ async function getState(ip: string): Promise<string> {
         .then(async (res: Response) => {
             return (await res.json()).regionName
         })
+}
+
+function updateProgressBar(year: [number, number], startRaw: string, endRaw: string) {
+    const now = dayjs();
+    const start = dayjs(startRaw);
+
+    const pct = Math.round(now.diff(start, 'd') / dayjs(endRaw).diff(start, 'd') * 100);
+
+    progressBar.style.width += `${pct}%`;
+    progressPCT.innerText = pct + '%';
 }
 
 async function init(selected: boolean = false) {
@@ -87,8 +97,7 @@ async function init(selected: boolean = false) {
 
     const yearResult = await getCurrentSchoolYearDuration(selectState.value);
 
-    console.log(yearResult);
-
+    updateProgressBar(yearResult.year, yearResult.duration.start, yearResult.duration.end);
 }
 
 selectState.addEventListener('', async () => {
