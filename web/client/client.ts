@@ -8,11 +8,8 @@ const nextDuration = document.getElementById('nx-duration') as HTMLSpanElement;
 const holidayBody = document.getElementById('tbody-holidays') as HTMLTableElement;
 const holidaysContainer = document.getElementById('holidays-container') as HTMLDivElement;
 
-(window as any).dayjs.extend((window as any).dayjs_plugin_customParseFormat);
-(window as any).dayjs.extend((window as any).dayjs_plugin_timezone);
-(window as any).dayjs.extend((window as any).dayjs_plugin_utc);
 
-(window as any).dayjs.tz.setDefault('Europe/Vienna');
+(window as any).dayjs.extend((window as any).dayjs_plugin_customParseFormat);
 const STATES: string[] = [
     'Styria',
     'Carinthia',

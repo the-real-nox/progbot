@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "A simple web-app to display you your progress in the school-year.",
   "scripts": {
-    "start": "ts-node web/server.ts",
-    "dev": "concurrently \"nodemon web/server.ts\" \"tsc --watch ./web/client/client.ts --outDir ./web/public/\" \"tailwindcss -i ./web/client/style.css -o ./web/public/client.css --watch\""
+    "start": "tsc ./web/client/client.ts ./web/client/dayjs.d.ts --outDir ./web/public/ && ts-node web/server.ts",
+    "dev": "concurrently \"nodemon web/server.ts\" \"tsc --watch ./web/client/client.ts ./web/client/dayjs.d.ts --outDir ./web/public/\" \"tailwindcss -i ./web/client/style.css -o ./web/public/client.css --watch\""
   },
   "author": "the-real-nox (Georg Kollegger)",
   "license": "Apache-2.0",
