@@ -1,5 +1,3 @@
-import { STATES } from "../server/constants";
-
 const selectState = document.getElementById('select-state') as HTMLSelectElement;
 const progressBar = document.getElementById('progress-bar') as HTMLDivElement;
 const progressPCT = document.getElementById('progress-pct') as HTMLSpanElement;
@@ -36,17 +34,16 @@ async function getState(ip: string): Promise<string> {
         })
 }
 
-async function init() {
+async function init(selected: boolean = false) {
     const IP: string = await getPubIP();
     const state: string = await getState(IP);
 
     console.log(Object.keys(mapping_DE_EN));
 
     selectState.innerHTML = '';
-    for (const key in Object.keys(mapping_DE_EN)) {
-        debugger
+    for (const key in mapping_DE_EN) {
         selectState.innerHTML += `
-            <option value='${mapping_DE_EN[key]}'${key == state ? ' selected' : ''}>${key}</option>
+            <option value='${mapping_DE_EN[key]}'${key == state && !selected ? ' selected' : ''}>${key + (key == state && !selected ? ' (Auto-detected)' : '')}</option>
         `
     }
 
@@ -55,7 +52,7 @@ async function init() {
 }
 
 selectState.addEventListener('change', () => {
-    init().then();
+    init(true).then();
 })
 
 init().then();
