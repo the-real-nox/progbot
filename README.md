@@ -14,8 +14,9 @@ python ./scripts/db_wizard.py
 npm run start
 ```
 
-Note that the duration of the summer-breaks include weekends (first saturday and last sunday).
-Make sure to take a look at [the risks of working with raw 3rd-party-data](#⚠️-third-party-data-based-risks-⚠️). 
+Note that the duration of the summer-breaks include weekends (first saturday and last sunday).  
+Make sure to take a look at [the risks of working with raw 3rd-party-data](#⚠️-third-party-data-based-risks-⚠️).  
+For a documentation of the restful-api, look at ["API.md"](./API.md).
 
 ## Filling the db
 We will make a request to `https://www.bmbwf.gv.at/Themen/schule/schulpraxis/termine/ferientermine_{year_start}_-_{year_end}.html`  
