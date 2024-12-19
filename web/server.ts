@@ -44,6 +44,8 @@ app.get('/api/:year_start/:year_end/duration', (req, res) => {
             }
         }
 
+
+
         res.status(status).json({
             success: true,
             data: result
@@ -73,7 +75,10 @@ app.get('/api/:year_start/:year_end/holidays', (req, res) => {
 
         res.status(status).json({
             success: true,
-            data: result
+            data: (result as []).reduce((acc, item: any) => {
+                acc[item.holiday_name] = { start: item.start, end: item.end };
+                return acc;
+            }, {} as {[key: string]: {start: string, end: string}})
         })
     })
 })
