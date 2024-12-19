@@ -103,7 +103,7 @@ class HolidayDuration:
 
         for state in states:
             if state not in cls.STATES:
-                logger.warn(f'Unknown state: {state}|')
+                logger.warn(f'Unknown state: {state}')
                 continue
 
             bitmask |= cls.STATES[state]
