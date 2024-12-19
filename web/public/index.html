@@ -19,40 +19,31 @@
             </select>
         </h1>
         <div class="mt-5 bg-slate-900 w-[90%] h-10 rounded-md">
-            <div class="bg-green-500 w-[50%] h-10 rounded-md flex justify-center items-center" id="progress-bar">
-                <span class="font-mono text-[1.5rem]" id="progress-pct">50%</span>
+            <div class="bg-green-500 w-0 h-10 rounded-md flex justify-center items-center" id="progress-bar">
+                <span class="font-mono text-[1.5rem]" id="progress-pct"></span>
             </div>
         </div>
         <div class="m-10">
             <h1 class="text-sub-heading font-bold">Next holiday:</h1>
             <div class="[&>*]:ml-2 font-mono text-data" id="nx-holiday-container">
-                <span id="nx-name">"Weihnachtsferien",</span>
-                <span id="nx-time-delta">2 days,</span>
-                <span id="nx-duration">21.12.2024 - 6.1.2025</span>
+                <span id="nx-name"></span>
+                <span id="nx-time-delta"></span>
+                <span id="nx-duration"></span>
             </div>
         </div>
-        <div>
+        <div id="holidays-container">
             <h1 class="font-bold text-sub-heading mb-2">All holidays of <span id="school-year">24/25</span></h1>
             <div class="overflow-hidden rounded-lg border-2 border-slate-900 text-data">
                 <table class="w-full text-left text-sm text-white border-slate-900 ">
                     <thead class="bg-slate-900 [&*>]:border-slate-900">
                         <tr>
-                            <th class="px-4 py-2">Header 1</th>
-                            <th class="px-4 py-2">Header 2</th>
-                            <th class="px-4 py-2">Header 3</th>
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Delta</th>
+                            <th class="px-4 py-2">Duration</th>
                         </tr>
                     </thead>
                     <tbody class="font-mono [&>*]:border-slate-900" id="tbody-holidays">
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Data 1</td>
-                            <td class="px-4 py-2">Data 2</td>
-                            <td class="px-4 py-2">Data 3</td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Data 4</td>
-                            <td class="px-4 py-2">Data 5</td>
-                            <td class="px-4 py-2">Data 6</td>
-                        </tr>
+                        
                     </tbody>
                 </table>
             </div>
