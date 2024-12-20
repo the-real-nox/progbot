@@ -161,7 +161,7 @@ function updateHolidaysTable(holidays: Record<string, Holiday>) {
         holidayBody.innerHTML += `
         <tr class="border-t">
             <td class="px-4 py-2">${holiday.name}</td>
-            <td class="px-4 py-2">${holiday.diff > 0 ? holiday.diff + (holiday.diff == 1 ? " day" : " days") : 'over already'}</td>
+            <td class="px-4 py-2">${holiday.diff >= 0 ? holiday.diff + (holiday.diff == 1 ? " day" : " days") : 'N/A'}</td>
             <td class="px-4 py-2">${dayjs(holiday.start).format(OUT_DATE_FORMAT)} - ${dayjs(holiday.end).format(OUT_DATE_FORMAT)}</td>
         </tr>`
     })
